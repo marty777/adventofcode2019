@@ -5,5 +5,5 @@ Usage:
 
         cargo run [DAY] [INPUT FILE] ...
 
-        [DAY]           The advent program day to run (between 1 and 1)
+        [DAY]           The advent program day to run
         [INPUT FILE]    The relative or absolute path to the input file.
