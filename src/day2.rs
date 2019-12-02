@@ -63,7 +63,7 @@ pub fn run(file_path:&str) {
 			println!{"Error, could not finish"};
 		}
 		else {
-			println!("Part A result: {} for desired output {}", result_b, desired_output);
+			println!("Part B result: {} for desired output {}", result_b, desired_output);
 		}
 		
 		
