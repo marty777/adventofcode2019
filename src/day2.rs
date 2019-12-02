@@ -1,4 +1,4 @@
-// day 1
+// day 2
 pub fn run(file_path:&str) {
 		let vec = super::utility::util_fread(file_path);
 		let intcodes_str = vec[0].split(",");
