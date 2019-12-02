@@ -1,6 +1,5 @@
 // day 1
 pub fn run(file_path:&str) {
-		// part A
 		let mut fuel_a:i32 = 0;
 		let mut fuel_b:i32 = 0;
 		let vec = super::utility::util_fread(file_path);
