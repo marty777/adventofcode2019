@@ -1,7 +1,7 @@
-// day 2
+// day 2 
 pub fn run(file_path:&str) {
 		let vec = super::utility::util_fread(file_path);
-		let intcodes_str = vec[0].split(",");
+		let intcodes_str = vec[0].split(","); 
 		let mut intcodes: Vec<usize> = Vec::new();
 		let mut intcodes_b: Vec<usize> = Vec::new();
 		for code in intcodes_str {
