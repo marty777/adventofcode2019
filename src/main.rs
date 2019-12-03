@@ -3,8 +3,9 @@ use std::path::Path;
 pub mod utility;
 pub mod day1;
 pub mod day2;
+pub mod day3;
 
-const MAXDAY:u32 = 2;
+const MAXDAY:u32 = 3;
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
@@ -31,6 +32,7 @@ fn main() {
 	match day {
 	 1=>day1::run(&args[2]),
 	 2=>day2::run(&args[2]),
+	 3=>day3::run(&args[2]),
 	 _=>{usage(); return;}
 	}
 }
