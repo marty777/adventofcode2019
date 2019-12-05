@@ -93,17 +93,5 @@ pub fn run(file_path:&str) {
 			99 => {println!("Program complete");break;}
 			_ => {println!("Invalid opcode found {}", opcode); break;}
 		}
-		// println!("op pos {}", op_pos);
-		// let op1:usize = intcodes[op_pos + 1];
-		// let op2:usize = intcodes[op_pos + 2];
-		// let op3:usize = intcodes[op_pos + 3];
-		// if intcodes[op_pos] == 1 {
-			// intcodes[op3] = intcodes[op1] + intcodes[op2];
-		// }
-		// else if intcodes[op_pos] == 2 {
-			// intcodes[op3] = intcodes[op1] * intcodes[op2];
-		// }
-		// op_pos += 4;
-		
 	}
 }
