@@ -1,4 +1,4 @@
-// day 3 
+// day 4
 
 pub fn run(file_path:&str) {
 	let vec = super::utility::util_fread(file_path);
