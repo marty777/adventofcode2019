@@ -4,8 +4,6 @@ struct OrbitInfo {
 	child : String,
 }
 
-// could this be vastly faster if I actually built a linked tree structure...who can say?
-
 pub fn run(file_path:&str) {
 	let vec = super::utility::util_fread(file_path);
 	let mut orbit_infos:Vec<OrbitInfo> = Vec::new();
@@ -15,6 +13,7 @@ pub fn run(file_path:&str) {
 		orbit_infos.push(OrbitInfo{parent: String::from(body_codes[0]), child: String::from(body_codes[1])});
 	}
 	
+	// build a list of bodies
 	for i in 0..orbit_infos.len() {
 		let mut found_parent:bool = false;
 		let mut found_child:bool = false;
@@ -37,16 +36,37 @@ pub fn run(file_path:&str) {
 		}
 	}
 	
-	bodies.sort();
+	// build index of child->parent relationship
+	let mut parent_index:Vec<i64> = Vec::new();
+	for i in 0..bodies.len() {
+		if bodies[i] == "COM" {
+			parent_index.push(-1);
+		}
+		else {
+			for j in 0..orbit_infos.len() {
+				if orbit_infos[j].child == bodies[i] {
+					for k in 0..bodies.len() {
+						if bodies[k] == orbit_infos[j].parent {
+							parent_index.push(k as i64);
+							break;
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
 	
-	let mut you_orbits:Vec<String> = Vec::new();
-	let mut san_orbits:Vec<String> = Vec::new();
+	let mut you_orbits:Vec<i64> = Vec::new();
+	let mut san_orbits:Vec<i64> = Vec::new();
 	
 	let mut orbit_count:u64 = 0;
 	for i in 0..bodies.len() {
-		if bodies[i] == "COM" {
+		let mut curr_index = parent_index[i];
+		if curr_index == -1 {
 			continue;
 		}
+		
 		let mut trace_you = false;
 		let mut trace_san = false;
 		if bodies[i] == "YOU" {
@@ -56,47 +76,23 @@ pub fn run(file_path:&str) {
 			trace_san = true;
 		}
 		
-		// trace number of hops back to COM
 		let mut local_hops = 0;
-		let mut curr_child:String = bodies[i].to_string();
 		loop {
-			let mut done:bool = false;
-			for j in 0..orbit_infos.len() {
-				//println!("{} {}", i, j);
-				if orbit_infos[j].child == curr_child {
-					if orbit_infos[j].parent == "COM" {
-						local_hops += 1;
-						done = true;
-						if trace_san  {
-							san_orbits.push("COM".to_string());
-						}
-						else if trace_you  {
-							you_orbits.push("COM".to_string());
-						}
-						break;
-					}
-					else {
-						local_hops += 1;
-						curr_child = orbit_infos[j].parent.to_string();
-						if trace_san  {
-							san_orbits.push(curr_child.to_string());
-						}
-						else if trace_you  {
-							you_orbits.push(curr_child.to_string());
-						}
-						break;
-					}
-				}
+			if trace_you {
+				you_orbits.push(curr_index);
 			}
-			if done {
-				orbit_count += local_hops;
+			else if trace_san {
+				san_orbits.push(curr_index);
+			}
+			curr_index = parent_index[curr_index as usize];
+			local_hops += 1;
+			if curr_index == -1 {
 				break;
 			}
 		}
-		if i % 100 == 99 {
-			println!("Processed orbits of {}/{} bodies. Current total orbits {}...", i+1, bodies.len(), orbit_count);
-		}
+		orbit_count += local_hops;
 	}
+	
 	println!("Result A: {}", orbit_count);
 	
 	let mut found:bool = false;
