@@ -110,6 +110,6 @@ pub fn run(file_path:&str) {
 	}
 	
 	if !found {
-		println!("Could not solution path in part B");
+		println!("Could not find solution path in part B");
 	}
 }
