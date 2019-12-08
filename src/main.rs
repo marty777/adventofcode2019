@@ -27,7 +27,6 @@ fn main() {
 		return;
 	}
 	
-	//let filePath1= args[2];
 	if !Path::new(&args[2]).is_file() {
 		println!("File {} could not be found", args[2]);
 		usage();
