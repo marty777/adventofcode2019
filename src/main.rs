@@ -53,7 +53,3 @@ fn usage() {
 	println!("\t[DAY]\t\tThe advent program day to run (between 1 and {})", MAXDAY);
 	println!("\t[INPUT FILE]\tThe relative or absolute path to the input file.");
 }
-
-pub fn main_test() {
-	println!("Hello, world!2");
-}
