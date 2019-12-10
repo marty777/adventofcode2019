@@ -11,10 +11,10 @@ struct Target {
 	x:i32,
 	y:i32,
 	bearing:f64,
+	dist2:f64, // distance squared
 	destroyed:bool,
 }
 
-// taken from 
 fn cmp_bearing(a: &Target, b: &Target) -> Ordering {
     if a.bearing < b.bearing {
         return Ordering::Less;
@@ -102,7 +102,8 @@ pub fn run(file_path:&str) {
 		let x_vec:f64 = (asteroids[max_index].x - asteroids[i].x) as f64;
 		let y_vec:f64 = (asteroids[max_index].y - asteroids[i].y) as f64;
 		let angle:f64 = y_vec.atan2(x_vec)/PI;
-		target_list.push(Target{x:asteroids[i].x, y:asteroids[i].y, bearing:angle, destroyed:false});
+		let dist2:f64 = x_vec * x_vec + y_vec * y_vec;
+		target_list.push(Target{x:asteroids[i].x, y:asteroids[i].y, bearing:angle, dist2:dist2, destroyed:false});
 	}
 	
 	target_list.sort_by(cmp_bearing);
@@ -126,37 +127,23 @@ pub fn run(file_path:&str) {
 			if target_list[j].destroyed {
 				continue;
 			}
-			let x_vec = target_list[j].x - asteroids[max_index].x;
-			let y_vec = target_list[j].y - asteroids[max_index].y;
-			let dist2 = x_vec * x_vec + y_vec * y_vec;
-			let dimdir_x = if x_vec < 0 {-1} else if x_vec == 0 {0} else {1}; 
-			let dimdir_y = if y_vec < 0 {-1} else if y_vec == 0 {0} else {1}; 
-			let rat:f64 = (x_vec as f64)/(y_vec as f64);
 			// check all asteroids for identical vector. If closer to i, asteroid k is occluded
 			let mut occluded = false;
 			for k in 0..target_list.len() {
 				if k == j || target_list[k].destroyed {
 					continue;
 				}
-				let x_vec2 = target_list[k].x - asteroids[max_index].x;
-				let y_vec2 = target_list[k].y - asteroids[max_index].y;
-				let dist2_2 = x_vec2 * x_vec2 + y_vec2 * y_vec2;
-				if dist2_2 >= dist2 {
+				if target_list[k].bearing != target_list[j].bearing {
 					continue;
 				}
-				let dimdir_x2 = if x_vec2 < 0 {-1} else if x_vec2 == 0 {0} else {1}; 
-				let dimdir_y2 = if y_vec2 < 0 {-1} else if y_vec2 == 0 {0} else {1}; 
-				if dimdir_x != dimdir_x2 || dimdir_y != dimdir_y2 {
+				if target_list[k].dist2 >= target_list[j].dist2 {
 					continue;
 				}
-				let rat2:f64 = (x_vec2 as f64)/(y_vec2 as f64);
-				if rat2 == rat {
-					occluded = true;
-					break;
-				}
+				occluded = true;
+				break;
+				
 			}
 			if !occluded {
-				// stand by to fire!
 				curr_targets.push(j);
 			}
 		}
