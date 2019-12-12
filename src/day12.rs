@@ -25,7 +25,6 @@ fn step(moons: &mut Vec<Moon>)->i64 {
 			if j == i {
 				continue;
 			}
-			//println!("{} {} ({} {} {}) ({} {} {})", i, j, (*moons)[i].x, (*moons)[i].y, (*moons)[i].z, (*moons)[j].x, (*moons)[j].y, (*moons)[j].z);
 			let dx:i64;
 			let dy:i64;
 			let dz:i64;
@@ -100,8 +99,9 @@ pub fn run(file_path:&str) {
 		moons_start.push(Moon{x:x_str.parse::<i64>().unwrap(), y:y_str.parse::<i64>().unwrap(), z:z_str.parse::<i64>().unwrap(), v_x:0, v_y:0, v_z:0});
 	}
 	
-	// if there's a period to the system, motion in each dimention is independant of the others. The overall period of the system will
-	// be the product of the periods of each dimension with the GCD factored out first
+	// if there's a period to the system, motion in each dimention is independent of the others. 
+	// The overall period of the system will be the mutual least common multiple of the periods 
+	// in each dimension. LCM will be obtained using prime factorization of each period.
 	let mut period_x = 0;
 	let mut period_y = 0;
 	let mut period_z = 0;
@@ -153,7 +153,7 @@ pub fn run(file_path:&str) {
 		}
 	}
 	
-	// factoring time with our old friend the sieve of eratosthenes
+	// get prime factors of each period using sieve of eratosthenes
 	let mut max = period_x;
 	if period_y > max {
 		max = period_y;
@@ -211,7 +211,6 @@ pub fn run(file_path:&str) {
 			break;
 		}
 	}
-	
 	
 	// determine least common multiple of periods using prime factorization
 	let mut product = 1;
