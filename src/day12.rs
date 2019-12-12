@@ -99,7 +99,7 @@ pub fn run(file_path:&str) {
 		moons_start.push(Moon{x:x_str.parse::<i64>().unwrap(), y:y_str.parse::<i64>().unwrap(), z:z_str.parse::<i64>().unwrap(), v_x:0, v_y:0, v_z:0});
 	}
 	
-	// if there's a period to the system, motion in each dimention is independent of the others. 
+	// if there's a period to the system, motion in each dimension is independent of the others. 
 	// The overall period of the system will be the mutual least common multiple of the periods 
 	// in each dimension. LCM will be obtained using prime factorization of each period.
 	let mut period_x = 0;
