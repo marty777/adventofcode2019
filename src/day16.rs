@@ -1,4 +1,4 @@
-// day 13 
+// day 16
 
 // can only be used with a large offset
 fn phase_b(input:&mut Vec<i64>, output: &mut Vec<i64>, offset:usize) {
