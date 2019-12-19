@@ -1,13 +1,5 @@
 // day 19
 
-fn to_iobuffer(iobuff:&mut super::utility::IOBuffer, input:&str) {
-	for c in input.chars() {
-		let val = c as u8;
-		(*iobuff).buff.push(val as i64);
-		(*iobuff).write_pos += 1;
-	}
-}
-
 fn get_coord(prog:&mut super::utility::IntcodeProgram, x:i64, y:i64)->i64 {
 	let mut exit:bool = false;
 	let mut prog2 =  super::utility::IntcodeProgram{mem:Vec::new(), pos:prog.pos, relative_base:prog.relative_base};
@@ -22,7 +14,7 @@ fn get_coord(prog:&mut super::utility::IntcodeProgram, x:i64, y:i64)->i64 {
 	return out_buffer.buff[0];
 }
 
-fn run_probe(prog:&mut super::utility::IntcodeProgram, part_a:bool) {
+fn run_probe(prog:&mut super::utility::IntcodeProgram) {
 	let width = 50;
 	let height = 50;
 	
@@ -30,7 +22,7 @@ fn run_probe(prog:&mut super::utility::IntcodeProgram, part_a:bool) {
 	let mut in_buffer:super::utility::IOBuffer = super::utility::IOBuffer{buff:Vec::new(), write_pos:0, read_pos:0};
 	let mut out_buffer:super::utility::IOBuffer = super::utility::IOBuffer{buff:Vec::new(), write_pos:0, read_pos:0};
 	let mut grid:Vec<u8> = Vec::new();
-	for i in 0..(width * height) {
+	for _i in 0..(width * height) {
 		grid.push(0);
 	}
 	
@@ -68,10 +60,9 @@ fn run_probe(prog:&mut super::utility::IntcodeProgram, part_a:bool) {
 	while y_high - y_low > 2 {
 		let y = (y_high + y_low) / 2;
 		let mut x = 0;
-		let mut first_x = 0;
-		let mut last_x = 0;
-		let mut first_x2 = 0;
-		let mut last_x2 = 0;
+		let first_x;
+		let last_x;
+		let first_x2;
 		while get_coord(prog, x, y) == 0 {
 			x += 1;
 		}
@@ -85,10 +76,7 @@ fn run_probe(prog:&mut super::utility::IntcodeProgram, part_a:bool) {
 			x+=1;
 		}
 		first_x2 = x;
-		while get_coord(prog, x, y+santa_width-1) == 1 {
-			x += 1;
-		}
-		last_x2 = x - 1;
+		
 		if last_x - first_x + 1 < santa_width || first_x2 > last_x - santa_width + 1 {
 			y_low = y;
 			continue;
@@ -103,14 +91,11 @@ fn run_probe(prog:&mut super::utility::IntcodeProgram, part_a:bool) {
 	}
 	for y in y_low..y_high+1 {
 		let mut x = 0;
-		let mut first_x = 0;
-		let mut last_x = 0;
-		let mut first_x2 = 0;
-		let mut last_x2 = 0;
+		let last_x;
+		let first_x2;
 		while get_coord(prog, x, y) == 0 {
 			x += 1;
 		}
-		first_x = x;
 		while get_coord(prog, x, y) == 1 {
 			x += 1;
 		}
@@ -123,7 +108,6 @@ fn run_probe(prog:&mut super::utility::IntcodeProgram, part_a:bool) {
 		while get_coord(prog, x, y+santa_width-1) == 1 {
 			x += 1;
 		}
-		last_x2 = x - 1;
 		if last_x - first_x2 == santa_width - 1 {
 			println!("Result B: {}", first_x2 * 10000 + y);
 			break;
@@ -146,7 +130,7 @@ pub fn run(file_path:&str) {
 	}
 	
 	
-	run_probe(&mut prog_a, true);
+	run_probe(&mut prog_a);
 	
 	
 

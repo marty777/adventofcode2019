@@ -1,5 +1,8 @@
 // day 18
 use std::cmp::Ordering;
+//use std::thread;
+//use std::sync::mpsc;
+
 
 #[derive(Copy, Clone)]
 struct Coord {
@@ -71,7 +74,7 @@ fn gridindex(x:usize, y:usize, width:usize)->usize {
 }
 
 // start must be an explored position, end does not need to be as long as it has an explored neighbor
-fn trace_path(grid:&mut MazeGrid, start:Coord, end:Coord)->Vec<Coord> {
+fn trace_path(grid:&MazeGrid, start:Coord, end:Coord)->Vec<Coord> {
 	
 	let mut path:Vec<Coord> = Vec::new();
 	// check if start and end are the same
@@ -283,16 +286,41 @@ fn key_steps_recurse(keys:&Vec<ElementPosition>, id:u8)->usize {
 	return 0;
 }
 
-fn get_keys_recurse2(grid: &mut MazeGrid, order:Vec<u8>, depth:usize)->OrderResult {
+// fn get_keys_threaded(grid: &'static MazeGrid) {
+	// let (tx, rx) = mpsc::channel();
+	
+	
+	
+	// for i in 0..(*grid).keys.len() {
+		// if (*grid).key_requirements[i].len() != 0 {
+			// continue;
+		// }
+		// thread::spawn(move || {
+			// let mut order:Vec<u8> = Vec::new();
+			// order.push(i as u8);
+			// let result = get_keys_recurse2(grid, order, 1);
+			// tx.send(result).unwrap();
+		// });
+	// }
+	
+	// for recieved in rx {
+		// println!("Recieved result with length {} from thread", recieved.result);
+	// }
+// }
+
+fn get_keys_recurse2(grid: &MazeGrid, order:Vec<u8>, depth:usize)->OrderResult {
+	let depth_cutoff = 8;
 	if(*grid).keys.len() < 1 {
 		return OrderResult{result:-1, order:Vec::new()};
 	}
-	for _i in 0..depth {
-		print!("\t");
-	}
-	print!("recurse depth {}: ", depth);
-	for i in 0..order.len() {
-		print!("{},", (order[i] + 65) as char);
+	if depth < depth_cutoff {
+		for _i in 0..depth {
+			print!("\t");
+		}
+		print!("recurse depth {}: ", depth);
+		for i in 0..order.len() {
+			print!("{},", (order[i] + 65) as char);
+		}
 	}
 	// test if this is a valid ordering so far. All required keys to reach a given key must appear previously in order
 	let mut valid = true;
@@ -317,7 +345,7 @@ fn get_keys_recurse2(grid: &mut MazeGrid, order:Vec<u8>, depth:usize)->OrderResu
 	}
 	
 	if !valid {
-		println!(" Invalid ");
+		//println!(" Invalid ");
 		return OrderResult{result:-1, order:Vec::new()};
 	}
 	
@@ -331,7 +359,9 @@ fn get_keys_recurse2(grid: &mut MazeGrid, order:Vec<u8>, depth:usize)->OrderResu
 			path_len += (*grid).cached_distances[(a * ((*grid).keys.len() + 1)) + b];
 			a = b;
 		}
-		println!(" Final {}", path_len);
+		if depth < depth_cutoff {
+			println!(" Final {}", path_len);
+		}
 		let mut result = OrderResult{result:path_len as i64, order:Vec::new()};
 		for i in 0..order.len() {
 			result.order.push(order[i]);
@@ -366,13 +396,13 @@ fn get_keys_recurse2(grid: &mut MazeGrid, order:Vec<u8>, depth:usize)->OrderResu
 					}
 				}
 				if !found_key {
-					println!("Could not find preceding key {} for {}", (i as u8 + 65) as char, ((*grid).keys_in_path[i][j] as u8 + 65) as char);
+					//println!("Could not find preceding key {} for {}", (i as u8 + 65) as char, ((*grid).keys_in_path[i][j] as u8 + 65) as char);
 					preceding_keys_not_used = true;
 					break;
 				}
 			}
 			if preceding_keys_not_used {
-				println!("skipping {} due to unused preceding keys", (i as u8 + 65) as char);
+				//println!("skipping {} due to unused preceding keys", (i as u8 + 65) as char);
 				continue;
 			}
 			
@@ -381,7 +411,7 @@ fn get_keys_recurse2(grid: &mut MazeGrid, order:Vec<u8>, depth:usize)->OrderResu
 				order2.push(order[j]);
 			}
 			order2.push(i as u8);
-			println!();
+			//println!();
 			let test_result = get_keys_recurse2(grid, order2, depth + 1);
 			if test_result.result > -1 && test_result.result < min_path {
 				min_path = test_result.result;
@@ -391,10 +421,13 @@ fn get_keys_recurse2(grid: &mut MazeGrid, order:Vec<u8>, depth:usize)->OrderResu
 				}
 			}
 		}
-		println!();
+		//println!();
 		let mut result = OrderResult{result:min_path, order:Vec::new()};
 		for i in 0..min_order.len() {
 			result.order.push(min_order[i]);
+		}
+		if depth < depth_cutoff {
+			println!("Returning {}", result.result);
 		}
 		return result;
 	}
@@ -844,9 +877,11 @@ pub fn run(file_path:&str) {
 	let vec = super::utility::util_fread(file_path);
 	read_grid(vec, &mut grid);
 	explore_grid(&mut grid);
-	let position = grid.origin;
 	//println!("{}", get_keys_recurse(&mut grid, 0, position));
 	let order:Vec<u8> = Vec::new();
+	
+	//get_keys_threaded(&grid);
+	
 	let result = get_keys_recurse2(&mut grid, order, 0);
 	println!("Result: {}", result.result);
 	for i in 0..result.order.len() {
@@ -866,17 +901,17 @@ pub fn run(file_path:&str) {
 	// println!("C->E {}", grid.cached_distances[(2 * (grid.keys.len() + 1)) + 4]);
 	// println!("E->F {}", grid.cached_distances[(4 * (grid.keys.len() + 1)) + 5]);
 	
-	 let coord1 = grid.keys[5].coord;
-	 let coord2 = grid.keys[6].coord;
-	 let trace = trace_path(&mut grid, coord1, coord2);
-	 for i in 0..trace.len() {
-		 println!("{} {},{}", i, trace[i].x, trace[i].y);
-	 }
+	 // let coord1 = grid.keys[5].coord;
+	 // let coord2 = grid.keys[6].coord;
+	 // let trace = trace_path(&mut grid, coord1, coord2);
+	 // for i in 0..trace.len() {
+		 // println!("{} {},{}", i, trace[i].x, trace[i].y);
+	 // }
 	 
-	 for i in 0..grid.keys_in_path.len() {
-		println!("Key {} precedes", (i as u8 + 65) as char);
-		for j in 0..grid.keys_in_path[i].len() {
-			println!("\t {}", (grid.keys_in_path[i][j] + 65) as char);
-		}
-	 }
+	 // for i in 0..grid.keys_in_path.len() {
+		// println!("Key {} precedes", (i as u8 + 65) as char);
+		// for j in 0..grid.keys_in_path[i].len() {
+			// println!("\t {}", (grid.keys_in_path[i][j] + 65) as char);
+		// }
+	 // }
 }
