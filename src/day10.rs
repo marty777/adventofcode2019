@@ -92,7 +92,7 @@ pub fn run(file_path:&str) {
 		}
 	}
 	
-	println!("Result A: {} ({}, {})", max_asteroid_count, asteroids[max_index].x, asteroids[max_index].y);
+	println!("Result A: {}", max_asteroid_count);
 	
 	let mut target_list:Vec<Target> = Vec::new();
 	for i in 0..asteroids.len() {

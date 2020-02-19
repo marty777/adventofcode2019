@@ -60,113 +60,125 @@ fn set(program: &mut IntcodeProgram, pos:i64, mode:i64, value: i64, err: &mut bo
 	return;
 }
 
-pub fn intcode_execute(prog: &mut IntcodeProgram, input:&mut IOBuffer, output:&mut IOBuffer, exit:&mut bool) {
+pub fn intcode_execute_once(prog: &mut IntcodeProgram, input:&mut IOBuffer, output:&mut IOBuffer, exit:&mut bool, io_wait:&mut bool, error: &mut bool) {
 	let mut err:bool = false;
-	loop  {
-		let memval = get(prog, (*prog).pos, 1, &mut err);
-		let opcode = memval % 100;
-		let mode1 = ((memval - opcode) % 1000)/100;
-		let mode2 = ((memval - opcode - 100*mode1) % 10000)/1000;
-		let mode3 = ((memval - opcode - 100*mode1 - 1000*mode2) % 100000)/10000; // presumably this will be used in future opcodes. Unused at the moment.
-		
-		
-		match opcode {
-			1 => { // add
-				let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
-				
-				let val = param1 + param2;
-				set(prog, (*prog).pos + 3, mode3, val, &mut err);
-				
-				(*prog).pos += 4;
-			},
-			2 => { // mul
-				let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
-				
-				let val = param1 * param2;
-				set(prog, (*prog).pos + 3, mode3, val, &mut err);
-				
-				(*prog).pos += 4;
-			},
-			3 => { // input
-				//let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				if (*input).read_pos < (*input).buff.len() {
-					let input_val = (*input).buff[(*input).read_pos];
-					(*input).read_pos += 1;
-					set(prog, (*prog).pos + 1, mode1, input_val, &mut err);
-				}
-				else {
-					// return until input available in buffer
-					*exit = false;
-					break;
-				}
+	
+	let memval = get(prog, (*prog).pos, 1, &mut err);
+	let opcode = memval % 100;
+	let mode1 = ((memval - opcode) % 1000)/100;
+	let mode2 = ((memval - opcode - 100*mode1) % 10000)/1000;
+	let mode3 = ((memval - opcode - 100*mode1 - 1000*mode2) % 100000)/10000; // presumably this will be used in future opcodes. Unused at the moment.
+	
+	
+	match opcode {
+		1 => { // add
+			let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
+			let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
+			
+			let val = param1 + param2;
+			set(prog, (*prog).pos + 3, mode3, val, &mut err);
+			
+			(*prog).pos += 4;
+		},
+		2 => { // mul
+			let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
+			let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
+			
+			let val = param1 * param2;
+			set(prog, (*prog).pos + 3, mode3, val, &mut err);
+			
+			(*prog).pos += 4;
+		},
+		3 => { // input
+			if (*input).read_pos < (*input).buff.len() {
+				let input_val = (*input).buff[(*input).read_pos];
+				(*input).read_pos += 1;
+				set(prog, (*prog).pos + 1, mode1, input_val, &mut err);
 				(*prog).pos += 2;
-				
-			},
-			4 => { // output
-				let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				(*output).buff.push(param1);
-				(*output).write_pos += 1;
-				
-				(*prog).pos += 2;
-				
-			},
-			5 => { // jump-if-true
-				let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
-				if param1 != 0 {
-					(*prog).pos = param2;
-				}
-				else {
-					(*prog).pos += 3;
-				}
-			},
-			6 => { // jump-if-true
-				let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
-				if param1 == 0 {
-					(*prog).pos = param2;
-				}
-				else {
-					(*prog).pos += 3;
-				}
-			},
-			7 => { // lt
-				let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
-				if param1 < param2 {
-					set(prog, (*prog).pos + 3, mode3, 1, &mut err);
-				}
-				else {
-					set(prog, (*prog).pos + 3, mode3, 0, &mut err);
-				}
-				(*prog).pos += 4;
-			},
-			8 => { // eq
-				let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
-				if param1 == param2 {
-					set(prog, (*prog).pos + 3, mode3, 1, &mut err);
-				}
-				else {
-					set(prog, (*prog).pos + 3, mode3, 0, &mut err);
-				}
-				(*prog).pos += 4;
-			},
-			9 => { // relative base
-				let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
-				(*prog).relative_base += param1;
-				(*prog).pos += 2;
-				
-			},
-			99 => {*exit = true; break;}
-			_ => {println!("Invalid opcode found {}", opcode); break;}
-		}
+			}
+			else {
+				// return until input available in buffer
+				*exit = false;
+				*io_wait = true;
+			}
+		},
+		4 => { // output
+			let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
+			(*output).buff.push(param1);
+			(*output).write_pos += 1;
+			
+			(*prog).pos += 2;
+			
+		},
+		5 => { // jump-if-true
+			let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
+			let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
+			if param1 != 0 {
+				(*prog).pos = param2;
+			}
+			else {
+				(*prog).pos += 3;
+			}
+		},
+		6 => { // jump-if-true
+			let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
+			let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
+			if param1 == 0 {
+				(*prog).pos = param2;
+			}
+			else {
+				(*prog).pos += 3;
+			}
+		},
+		7 => { // lt
+			let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
+			let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
+			if param1 < param2 {
+				set(prog, (*prog).pos + 3, mode3, 1, &mut err);
+			}
+			else {
+				set(prog, (*prog).pos + 3, mode3, 0, &mut err);
+			}
+			(*prog).pos += 4;
+		},
+		8 => { // eq
+			let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
+			let param2 = get(prog, (*prog).pos + 2, mode2, &mut err);
+			if param1 == param2 {
+				set(prog, (*prog).pos + 3, mode3, 1, &mut err);
+			}
+			else {
+				set(prog, (*prog).pos + 3, mode3, 0, &mut err);
+			}
+			(*prog).pos += 4;
+		},
+		9 => { // relative base
+			let param1 = get(prog, (*prog).pos + 1, mode1, &mut err);
+			(*prog).relative_base += param1;
+			(*prog).pos += 2;
+			
+		},
+		99 => {*exit = true; *io_wait = false;}
+		_ => {println!("Invalid opcode found {}", opcode); *error = true;}
 	}
-	return;
 }
 
+pub fn intcode_execute(prog: &mut IntcodeProgram, input:&mut IOBuffer, output:&mut IOBuffer, exit:&mut bool) {
+	let mut instruction_error = false;
+	let mut instruction_exit = false;
+	let mut instruction_io_wait = false;
+	loop {
+		intcode_execute_once(prog, input, output, &mut instruction_exit, &mut instruction_io_wait, &mut instruction_error);
+		if instruction_exit {
+			*exit = true;
+			return;
+		}
+		else if instruction_io_wait || instruction_error {
+			*exit = false;
+			return;
+		}
+	}
+}
 
 // read by line, returning a vector of Strings
 pub fn util_fread(file_path:&str) -> std::vec::Vec<String>{

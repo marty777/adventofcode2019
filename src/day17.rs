@@ -58,7 +58,6 @@ fn run_bot(prog:&mut super::utility::IntcodeProgram, part_a:bool)->i64 {
 		
 		for i in 0..out_buffer.buff.len() {
 			grid.push(out_buffer.buff[i] as u8);
-			print!("{}", (out_buffer.buff[i] as u8) as char)
 		}
 		
 		let mut width:usize = 0;

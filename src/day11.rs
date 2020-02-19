@@ -72,7 +72,6 @@ fn run_robot(prog:&mut super::utility::IntcodeProgram, part_b:bool)->usize {
 			3=>{x_pos -= 1;},
 			_=>{},
 		}
-		//println!("x:{} y:{} dir:{} panels:{}", x_pos, y_pos, dir, panels.len());
 	}
 	if !part_b {
 		return panels.len();

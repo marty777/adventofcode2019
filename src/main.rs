@@ -20,8 +20,14 @@ pub mod day16;
 pub mod day17;
 pub mod day18;
 pub mod day19;
+pub mod day20;
+pub mod day21;
+pub mod day22;
+pub mod day23;
+pub mod day24;
+pub mod day25;
 
-const MAXDAY:u32 = 19;
+const MAXDAY:u32 = 25;
 
 fn main() {
 	let args: Vec<String> = env::args().collect();
@@ -64,6 +70,12 @@ fn main() {
 	 17=>day17::run(&args[2]),
 	 18=>day18::run(&args[2]),
 	 19=>day19::run(&args[2]),
+	 20=>day20::run(&args[2]),
+	 21=>day21::run(&args[2]),
+	 22=>day22::run(&args[2]),
+	 23=>day23::run(&args[2]),
+	 24=>day24::run(&args[2]),
+	 25=>day25::run(&args[2]),
 	 _=>{usage(); return;}
 	}
 }
