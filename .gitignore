@@ -1,2 +1,4 @@
 /target
 **/*.rs.bk
+# omit puzzle input files
+*.txt
